@@ -10,13 +10,15 @@ namespace Eticaret.Core.Entities
         [Display(Name = "Açıklama")]
         public string? Description { get; set; }
         public string? Logo { get; set; }
-        [Display(Name = "Aktif")]
-        public bool IsActive { get; set; }
+        [Display(Name = "Aktif?")]
+        public bool IsActive { get; set; } 
         [Display(Name = "Sıra No")]
 
         public int OrderNo { get; set; }
-        public DateTime? CreateDate { get; set; }
         [Display(Name = "Kayıt Tarihi"), ScaffoldColumn(false)]
+        public DateTime CreateDate { get; set; } = DateTime.Now;
+        [ScaffoldColumn(false)]
+
         public IList<Product> Products { get; set; }
 
     }
