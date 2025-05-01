@@ -19,7 +19,7 @@ namespace Eticaret.Core.Entities
         public DateTime CreateDate { get; set; } = DateTime.Now;
         [ScaffoldColumn(false)]
 
-        public IList<Product> Products { get; set; }
+        public IList<Product>? Products { get; set; }
 
     }
 }
