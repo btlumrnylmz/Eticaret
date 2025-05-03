@@ -72,7 +72,7 @@ namespace Eticaret.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AppUsers");
+                    b.ToTable("AppUsers", (string)null);
 
                     b.HasData(
                         new
@@ -121,7 +121,7 @@ namespace Eticaret.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Brands");
+                    b.ToTable("Brands", (string)null);
                 });
 
             modelBuilder.Entity("Eticaret.Core.Entities.Category", b =>
@@ -161,7 +161,7 @@ namespace Eticaret.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
 
                     b.HasData(
                         new
@@ -222,7 +222,7 @@ namespace Eticaret.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Contacts");
+                    b.ToTable("Contacts", (string)null);
                 });
 
             modelBuilder.Entity("Eticaret.Core.Entities.News", b =>
@@ -254,7 +254,7 @@ namespace Eticaret.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("News");
+                    b.ToTable("News", (string)null);
                 });
 
             modelBuilder.Entity("Eticaret.Core.Entities.Product", b =>
@@ -312,7 +312,7 @@ namespace Eticaret.Data.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("Eticaret.Core.Entities.Slide", b =>
@@ -341,7 +341,7 @@ namespace Eticaret.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Slides");
+                    b.ToTable("Slides", (string)null);
                 });
 
             modelBuilder.Entity("Eticaret.Core.Entities.Product", b =>

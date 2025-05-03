@@ -26,8 +26,8 @@
 		<Folder Include="Areas\Admin\Data\" />
 		<Folder Include="Areas\Admin\Models\" />
 		<Folder Include="wwwroot\Img\Categories\" />
-		<Folder Include="wwwroot\Img\Products\" />
-		<Folder Include="wwwroot\Img\Slide\" />
+		<Folder Include="wwwroot\Img\Slides\" />
+		<Folder Include="wwwroot\Img\News\" />
 	</ItemGroup>
 
 </Project>
