@@ -7,10 +7,10 @@ namespace Eticaret.Core.Entities
         [ScaffoldColumn(false)]
         public int Id { get; set; }
 
-        [Display(Name = "Adı")]
+        [Display(Name = "Adı"),Required(ErrorMessage ="{0}Alanı Boş Geçilemez!")]
         public string Name { get; set; }
 
-        [Display(Name = "Soyadı")]
+        [Display(Name = "Soyadı"), Required(ErrorMessage = "{0}Alanı Boş Geçilemez!")]
         public string Surname { get; set; }
 
         public string? Email { get; set; }
@@ -18,7 +18,7 @@ namespace Eticaret.Core.Entities
         [Display(Name = "Telefon")]
         public string? Phone { get; set; }
 
-        [Display(Name = "Mesaj")]
+        [Display(Name = "Mesaj"), Required(ErrorMessage = "{0}Alanı Boş Geçilemez!")]
         public string Message { get; set; }
 
         [Display(Name = "Kayıt Tarihi"), ScaffoldColumn(false)]

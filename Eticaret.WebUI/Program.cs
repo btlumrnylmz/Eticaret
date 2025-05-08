@@ -1,5 +1,7 @@
 using Eticaret.Data;
-
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.Extensions.DependencyInjection;
+using System.Security.Claims;
 namespace Eticaret.WebUI
 {
     public class Program
@@ -11,6 +13,20 @@ namespace Eticaret.WebUI
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddDbContext<DatabaseContext>();
+
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(x =>
+            {
+                x.LoginPath = "/Account/SignIn";
+                x.AccessDeniedPath = "/AccesDenied";
+                x.Cookie.Name = "Account";
+                x.Cookie.MaxAge=TimeSpan.FromDays(7);
+                x.Cookie.IsEssential = true;
+            });
+            builder.Services.AddAuthorization(x =>
+            {
+                x.AddPolicy("AdminPolicy",policy=>policy.RequireClaim(ClaimTypes.Role,"Admin"));
+                x.AddPolicy("UserPolicy",policy=>policy.RequireClaim(ClaimTypes.Role,"Admin","User","Customer"));
+            });
 
             var app = builder.Build();
 
@@ -26,7 +42,7 @@ namespace Eticaret.WebUI
             app.UseStaticFiles();
 
             app.UseRouting();
-
+            app.UseAuthentication();//önce oturum açma sonra yetkilendirme
             app.UseAuthorization();
 
             app.MapControllerRoute(

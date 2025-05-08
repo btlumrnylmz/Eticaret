@@ -12,7 +12,7 @@ namespace Eticaret.Core.Entities
         public string Email { get; set; }
         [Display(Name = "Telefon")]
         public string? Phone { get; set; }
-        [Display(Name = "Email")]
+        [Display(Name = "Şifre")]
         public string Password { get; set; }
         [Display(Name = "Kullanıcı Adı")]
         public string? UserName { get; set; }
