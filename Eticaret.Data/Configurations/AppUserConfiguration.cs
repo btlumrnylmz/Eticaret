@@ -19,7 +19,7 @@ namespace Eticaret.Data.Configurations
                    Id = 1,
                    UserName="Admin",
                    Email="admin@eticaret.io",
-                   IsActive=false,
+                   IsActive=true,
                    IsAdmin=true,
                    Name="test",
                    Surname="test",

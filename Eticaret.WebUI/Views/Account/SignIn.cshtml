@@ -49,6 +49,8 @@
 			<label class="form-check-label" for="checkDefault">
 				Beni Hatırla
 			</label>
-		</div> <button class="btn btn-primary w-100 py-2" type="submit">Giriş</button>
+		</div> 
+		<input type="hidden" asp-for="ReturnUrl" value="@Context.Request.Query["ReturnUrl"]"/>
+		<button class="btn btn-primary w-100 py-2" type="submit">Giriş</button>
 	</form>
 </main>

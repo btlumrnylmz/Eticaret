@@ -5,7 +5,8 @@ using Microsoft.AspNetCore.Authentication;//login
 using Microsoft.AspNetCore.Authorization;//login
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;//login
+using System.Security.Claims;
+using System.Threading.Tasks;//login
 
 namespace Eticaret.WebUI.Controllers
 {
@@ -20,6 +21,59 @@ namespace Eticaret.WebUI.Controllers
         [Authorize]
         public IActionResult Index()
         {
+            AppUser user = _context.AppUsers.FirstOrDefault(x => x.UserGuid.ToString()
+             == HttpContext.User.FindFirst("UserGuid").Value);
+            if (user is null)
+            {
+                return NotFound();
+            }
+            var model = new UserEditViewModel()
+            {
+                Email = user.Email,
+                Id = user.Id,
+                Name = user.Name,
+                Password = user.Password,
+                Phone = user.Phone,
+                Surname = user.Surname
+            };
+            return View(model);
+        }
+        [HttpPost, Authorize]
+        public IActionResult Index(UserEditViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    AppUser user = _context.AppUsers.FirstOrDefault(x => x.UserGuid.ToString()
+            == HttpContext.User.FindFirst("UserGuid").Value);
+                    if (user is not null)
+                    {
+                        user.Surname = model.Surname;
+                        user.Phone = model.Phone;
+                        user.Name = model.Name;
+                        user.Password = model.Password;
+                        user.Email = model.Email;
+                        _context.AppUsers.Update(user);
+                        var sonuc=_context.SaveChanges();
+
+                        if (sonuc > 0)
+                        {
+                            TempData["Message"] = @"<div class=""alert alert-success alert-dismissible fade show"" role=""alert"">
+                    <strong>Mesajınız Gönderilmiştir!</strong>
+                    <button type=""button"" class=""btn-close"" data-bs-dismiss=""alert"" aria-label=""Close""></button>
+                    </div>";
+                            // await MailHelper.SendMailAsync(contact);
+                            return RedirectToAction("Index");
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+
+                    ModelState.AddModelError("", "Hata Oluştu!");
+                }
+            }
             return View();
         }
         public IActionResult SignIn()
@@ -32,13 +86,13 @@ namespace Eticaret.WebUI.Controllers
             if (ModelState.IsValid)
             {
                 try
-                { 
+                {
                     var account = await _context.AppUsers.FirstOrDefaultAsync(x => x.Email == loginViewModel.Email && x.Password == loginViewModel.Password & x.IsActive);
                     if (account == null)
                     {
                         ModelState.AddModelError("", "Giriş Başarısız!");
                     }
-                    else 
+                    else
                     {
                         var claims = new List<Claim>()
                         {
@@ -48,19 +102,19 @@ namespace Eticaret.WebUI.Controllers
                             new("UserId", account.Id.ToString()),
                             new("UserGuid", account.UserGuid.ToString()),
                         };
-                        var userIdentity= new ClaimsIdentity(claims,"Login");
+                        var userIdentity = new ClaimsIdentity(claims, "Login");
                         ClaimsPrincipal userPrincipal = new ClaimsPrincipal(userIdentity);
                         await HttpContext.SignInAsync(userPrincipal);
-                        return RedirectToAction("Index", "Home");
+                        return Redirect(string.IsNullOrEmpty(loginViewModel.ReturnUrl) ? "/" : loginViewModel.ReturnUrl);
                     }
-               }
+                }
                 catch (Exception Hata)
                 {//loglama
-                    ModelState.AddModelError("","Hata Oluştu!");
+                    ModelState.AddModelError("", "Hata Oluştu!");
                 }
             }
             return View(loginViewModel);
-        } 
+        }
         public IActionResult SignUp()
         {
             return View();
@@ -68,16 +122,22 @@ namespace Eticaret.WebUI.Controllers
         [HttpPost]
         public async Task<IActionResult> SignUpAsync(AppUser appUser)
         {
+            appUser.IsAdmin = false;
+            appUser.IsAdmin = true;
             if (ModelState.IsValid)
             {
-                appUser.IsAdmin = false;
-                appUser.IsAdmin = true;
+
                 await _context.AddAsync(appUser);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
             return View(appUser);
             return View();
+        }
+        public async Task<IActionResult> SignOut()
+        {
+            await HttpContext.SignOutAsync();
+            return RedirectToAction("SignIn");
         }
     }
 }
