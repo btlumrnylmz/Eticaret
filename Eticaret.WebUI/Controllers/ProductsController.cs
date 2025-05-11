@@ -1,4 +1,5 @@
-﻿using Eticaret.Data;
+﻿using Eticaret.Core.Entities;
+using Eticaret.Service.Abstract;
 using Eticaret.WebUI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,16 +8,22 @@ namespace Eticaret.WebUI.Controllers
 {
     public class ProductsController : Controller
     {
-        private readonly DatabaseContext _context;
+        //private readonly DatabaseContext _context;
 
-        public ProductsController(DatabaseContext context)
+        //public ProductsController(DatabaseContext context)
+        //{
+        //    _context = context;
+        //}
+        private readonly IService<Product> _serviceProduct;
+
+        public ProductsController(IService<Product> service)
         {
-            _context = context;
+            _serviceProduct = service;
         }
         public async Task<IActionResult> Index(string q="")
         {
-            var databaseContext = _context.Products.Where(p => p.IsActive && p.Name.Contains(q)||p.Description.Contains(q)).Include(p => p.Brand).Include(p => p.Category);
-            return View(await databaseContext.ToListAsync());
+            var databaseContext =_serviceProduct.GetAllAsync(p => p.IsActive && p.Name.Contains(q)||p.Description.Contains(q));
+            return View(await databaseContext);
         }
         // GET: Admin/Products/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -26,7 +33,7 @@ namespace Eticaret.WebUI.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products
+            var product = await _serviceProduct.GetQueryable()
                 .Include(p => p.Brand)
                 .Include(p => p.Category)
                 .FirstOrDefaultAsync(m => m.Id == id);
@@ -35,7 +42,7 @@ namespace Eticaret.WebUI.Controllers
                 return NotFound();
             }
             var model =new ProductDetailViewModel() { Product = product,
-            RelatedProducts = _context.Products.Where(p => p.IsActive &&p.CategoryId==product.CategoryId &&p.Id!=product.Id)
+            RelatedProducts = _serviceProduct.GetQueryable().Where(p => p.IsActive &&p.CategoryId==product.CategoryId &&p.Id!=product.Id)
             };
             return View(model);
         }

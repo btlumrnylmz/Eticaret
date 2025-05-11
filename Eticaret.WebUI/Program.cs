@@ -1,7 +1,10 @@
 using Eticaret.Data;
+using Eticaret.Service.Abstract;
+using Eticaret.Service.Concrete;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
 using System.Security.Claims;
+
 namespace Eticaret.WebUI
 {
     public class Program
@@ -22,6 +25,8 @@ namespace Eticaret.WebUI
             });
 
             builder.Services.AddDbContext<DatabaseContext>();
+
+            builder.Services.AddScoped(typeof(IService<>),typeof(Service<>));
 
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(x =>
             {

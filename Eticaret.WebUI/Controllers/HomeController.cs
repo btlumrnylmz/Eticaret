@@ -1,9 +1,7 @@
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Eticaret.Core.Entities;
-using Eticaret.Data;
+using Eticaret.Service.Abstract;
 using Eticaret.WebUI.Models;
-using Eticaret.WebUI.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,20 +9,28 @@ namespace Eticaret.WebUI.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly DatabaseContext _context;
+      private readonly IService<Product> _serviceProduct;
+      private readonly IService<News> _serviceNews;
+      private readonly IService<Slide> _serviceSlides;
+      private readonly IService<Contact> _serviceContact;
 
-        public HomeController(DatabaseContext context)
+        public HomeController(IService<Product> serviceProduct, IService<News> serviceNews, IService<Slide> serviceSlides, IService<Contact> serviceContact)
         {
-            _context = context;
+            _serviceProduct = serviceProduct;
+            _serviceNews = serviceNews;
+            _serviceSlides = serviceSlides;
+            _serviceContact = serviceContact;
         }
+
+
 
         public async Task<IActionResult> Index()
         {
             var model = new HomePageViewModel()
             {
-                Slides = await _context.Slides.ToListAsync(),
-                News = await _context.News.ToListAsync(),
-                Products = await _context.Products.Where(p => p.IsActive && p.IsHome).ToListAsync()
+                Slides = await _serviceSlides.GetAllAsync(),
+                News = await _serviceNews.GetAllAsync(),
+                Products = await _serviceProduct.GetAllAsync(p => p.IsActive && p.IsHome)
             };
             return View(model);
         }
@@ -49,15 +55,15 @@ namespace Eticaret.WebUI.Controllers
             {
                 try
                 {
-                    await _context.Contacts.AddAsync(contact);
-                    var sonuc =await _context.SaveChangesAsync();
+                    await _serviceContact.AddAsync(contact);
+                    var sonuc = await _serviceContact.SaveChangesAsync();
                     if (sonuc > 0)
                     {
                         TempData["Message"] = @"<<div class=""alert alert-success alert-dismissible fade show"" role=""alert"">
                     <strong>Mesajýnýz Gönderilmiþtir!</strong>
                     <button type=""button"" class=""btn-close"" data-bs-dismiss=""alert"" aria-label=""Close""></button>
                     </div>";
-                      // await MailHelper.SendMailAsync(contact);
+                        // await MailHelper.SendMailAsync(contact);
                         return RedirectToAction("ContactUs");
                     }
                 }

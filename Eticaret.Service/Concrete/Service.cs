@@ -75,22 +75,22 @@ namespace Eticaret.Service.Concrete
 
         public IQueryable<T> GetQueryable()
         {
-            throw new NotImplementedException();
+            return _dbSet;
         }
 
         public int SaveChanges()
         {
-            return await _context.SaveChangesAsync();
+            return  _context.SaveChanges();
         }
 
-        public Task<int> SaveChangesAsync()
+        public async Task<int> SaveChangesAsync()
         {
-            throw new NotImplementedException();
+            return await _context.SaveChangesAsync();
         }
 
         public void Update(T entity)
         {
-            throw new NotImplementedException();
+            _dbSet.Update(entity);
         }
     }
 }

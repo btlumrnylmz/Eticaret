@@ -1,27 +1,32 @@
 ﻿using Eticaret.Core.Entities;
-using Eticaret.Data;
+using Eticaret.Service.Abstract;
 using Eticaret.WebUI.Models;
 using Microsoft.AspNetCore.Authentication;//login
 using Microsoft.AspNetCore.Authorization;//login
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
-using System.Threading.Tasks;//login
 
 namespace Eticaret.WebUI.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly DatabaseContext _context;
+        //private readonly DatabaseContext _context;
 
-        public AccountController(DatabaseContext context)
+        //public AccountController(DatabaseContext context)
+        //{
+        //    _context = context;
+        //}
+        private readonly IService<AppUser> _service;
+
+        public AccountController(IService<AppUser> service)
         {
-            _context = context;
+            _service = service;
         }
+
         [Authorize]
-        public IActionResult Index()
+        public async Task<IActionResult> IndexAsync()
         {
-            AppUser user = _context.AppUsers.FirstOrDefault(x => x.UserGuid.ToString()
+            AppUser user =await _service.GetAsync(x => x.UserGuid.ToString()
              == HttpContext.User.FindFirst("UserGuid").Value);
             if (user is null)
             {
@@ -39,14 +44,14 @@ namespace Eticaret.WebUI.Controllers
             return View(model);
         }
         [HttpPost, Authorize]
-        public IActionResult Index(UserEditViewModel model)
+        public async Task<IActionResult> IndexAsync(UserEditViewModel model)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    AppUser user = _context.AppUsers.FirstOrDefault(x => x.UserGuid.ToString()
-            == HttpContext.User.FindFirst("UserGuid").Value);
+                    AppUser user = await _service.GetAsync(x => x.UserGuid.ToString()
+           == HttpContext.User.FindFirst("UserGuid").Value);
                     if (user is not null)
                     {
                         user.Surname = model.Surname;
@@ -54,13 +59,13 @@ namespace Eticaret.WebUI.Controllers
                         user.Name = model.Name;
                         user.Password = model.Password;
                         user.Email = model.Email;
-                        _context.AppUsers.Update(user);
-                        var sonuc=_context.SaveChanges();
+                        _service.Update(user);
+                        var sonuc=_service.SaveChanges();
 
                         if (sonuc > 0)
                         {
                             TempData["Message"] = @"<div class=""alert alert-success alert-dismissible fade show"" role=""alert"">
-                    <strong>Mesajınız Gönderilmiştir!</strong>
+                    <strong>Bilgileriniz Güncellenmiştir!</strong>
                     <button type=""button"" class=""btn-close"" data-bs-dismiss=""alert"" aria-label=""Close""></button>
                     </div>";
                             // await MailHelper.SendMailAsync(contact);
@@ -87,7 +92,7 @@ namespace Eticaret.WebUI.Controllers
             {
                 try
                 {
-                    var account = await _context.AppUsers.FirstOrDefaultAsync(x => x.Email == loginViewModel.Email && x.Password == loginViewModel.Password & x.IsActive);
+                    var account = await _service.GetAsync(x => x.Email == loginViewModel.Email && x.Password == loginViewModel.Password & x.IsActive);
                     if (account == null)
                     {
                         ModelState.AddModelError("", "Giriş Başarısız!");
@@ -127,9 +132,9 @@ namespace Eticaret.WebUI.Controllers
             if (ModelState.IsValid)
             {
 
-                await _context.AddAsync(appUser);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                await _service.AddAsync(appUser);
+                await _service.SaveChangesAsync();
+                return RedirectToAction(nameof(IndexAsync));
             }
             return View(appUser);
             return View();
