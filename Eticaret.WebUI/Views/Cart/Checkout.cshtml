@@ -1,15 +1,15 @@
-﻿@model CartViewModel
+﻿@model CheckoutViewModel
 
 @{
 	ViewData["Title"] = "Satın Al";
 }
 <section class="container my-5">
 	<div class="text-center">
-		<h1 class="display-4">SAtın Al</h1>
+		<h1 class="display-4">Sepetim</h1>
 	</div>
 	<div class="row">
 
-		@if (Model.CartLines.Any())
+		@if (Model.CartProducts.Any())
 		{
 			<div class="col-md-8">
 				<div class="table-responsive">
@@ -21,12 +21,11 @@
 							<th>Fiyat</th>
 							<th>Miktar</th>
 							<th>Toplam</th>
-							<th></th>
 						</tr>
 
 						<tbody>
 
-							@foreach (var item in Model.CartLines)
+							@foreach (var item in Model.CartProducts)
 							{
 								<tr>
 									<td>
@@ -46,14 +45,6 @@
 									<td>
 										@((item.Quantity * item.Product.Price).ToString("c"))
 									</td>
-									<td>
-										<form asp-action="Remove" asp-controller="Cart">
-											<input type="hidden" name="ProductId" value="@item.Product.Id" />
-											<button class="btn btn-sm btn-danger" type="submit">
-												<i class="bi bi-x-lg"></i>
-											</button>
-										</form>
-									</td>
 								</tr>
 							}
 
@@ -65,35 +56,26 @@
 
 			<div class="col-md-4">
 				<div>
-					<h4>Sepet Toplamı</h4>
+					<h4>Sipariş Özeti</h4>
 				</div>
 				<table class="table">
 					<tr>
-						<td>Aratoplam</td>
+						<td>Ürün Toplamı</td>
 						<td>
 							@Model.TotalPrice.ToString("c")
 						</td>
 					</tr>
 					<tr>
 						<td>Kargo</td>
-						<td>@(Model.TotalPrice > 999 ? "Ücretsiz" : Model.CartLines.Any() ? "99₺" : "0₺")</td>
+						<td>@(Model.TotalPrice > 999 ? "Ücretsiz" : Model.CartProducts.Any() ? "99₺" : "0₺")</td>
 					</tr>
 					<tr>
 						<th>Sipariş Toplamı</th>
 						<td>
-							@(Model.TotalPrice > 999 ? Model.TotalPrice.ToString("c") : (Model.CartLines.Any() ? Model.TotalPrice + 99 : Model.TotalPrice.ToString("c")))
+							@(Model.TotalPrice > 999 ? Model.TotalPrice.ToString("c") : (Model.CartProducts.Any() ? Model.TotalPrice + 99 : Model.TotalPrice.ToString("c")))
 						</td>
 					</tr>
 				</table>
-				<div class="text-center">
-					<a href="/" class="btn btn-danger">
-						<i class="bi bi-cart me-1"></i>Alışverişe Devam Et
-						</a>
-					<a href="/Cart/Checkout" class="btn btn-success">
-						<i class="bi bi-credit-card me-1"></i>Satın Al
-						</a>
-				</div>
-
 			</div>
 		}
 		else

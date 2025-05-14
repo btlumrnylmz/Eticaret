@@ -11,7 +11,8 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Eticaret.WebUI.Areas.Admin.Controllers
 {
-    [Area("Admin"), Authorize(Policy ="AdminPolicy")]
+    [Area("Admin")]
+    [Authorize(Policy = "AdminPolicy")]
     public class AppUsersController : Controller
     {
         private readonly DatabaseContext _context;
@@ -52,7 +53,7 @@ namespace Eticaret.WebUI.Areas.Admin.Controllers
         }
 
         // POST: Admin/AppUsers/Create
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(AppUser appUser)
@@ -83,10 +84,10 @@ namespace Eticaret.WebUI.Areas.Admin.Controllers
         }
 
         // POST: Admin/AppUsers/Edit/5
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id,AppUser appUser)
+        public async Task<IActionResult> Edit(int id, AppUser appUser)
         {
             if (id != appUser.Id)
             {
