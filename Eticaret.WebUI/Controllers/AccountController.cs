@@ -128,7 +128,7 @@ namespace Eticaret.WebUI.Controllers
         public async Task<IActionResult> SignUpAsync(AppUser appUser)
         {
             appUser.IsAdmin = false;
-            appUser.IsAdmin = true;
+            appUser.IsActive = true;
             if (ModelState.IsValid)
             {
 
