@@ -12,23 +12,25 @@ namespace Eticaret.WebUI.Controllers
     public class CartController : Controller
     {
         private readonly IService<Product> _serviceProduct;
-        private readonly IService<Address> _serviceAddress; 
+        private readonly IService<Address> _serviceAddress;
         private readonly IService<AppUser> _serviceAppUser;
-
-        public CartController(IService<Product> service, IService<Address> serviceAddress, IService<AppUser> serviceAppUser)
+        private readonly IService<Order> _serviceOrder;
+         
+        public CartController(IService<Product> service, IService<Address> serviceAddress, IService<AppUser> serviceAppUser, IService<Order> serviceOrder)
         {
             _serviceProduct = service;
             _serviceAddress = serviceAddress;
             _serviceAppUser = serviceAppUser;
+            _serviceOrder = serviceOrder;
         }
         public IActionResult Index()
         {
             var cart = GetCart();
-           
+
             var model = new CartViewModel()
             {
-                CartLines=cart.CartLines,
-                TotalPrice=cart.TotalPrice()
+                CartLines = cart.CartLines,
+                TotalPrice = cart.TotalPrice()
             };
             return View(model);
         }
@@ -55,7 +57,8 @@ namespace Eticaret.WebUI.Controllers
                 HttpContext.Session.SetJson("Cart", cart);
             }
             return RedirectToAction("Index");
-        }public IActionResult Remove(int ProductId)
+        }
+        public IActionResult Remove(int ProductId)
         {
             var product = _serviceProduct.Find(ProductId);
             if (product != null)
@@ -67,22 +70,92 @@ namespace Eticaret.WebUI.Controllers
             return RedirectToAction("Index");
         }
         [Authorize]
-        public async Task<IActionResult> CheckoutAsync()
+        public async Task<IActionResult> Checkout()
         {
             var cart = GetCart();
             var appUser = await _serviceAppUser.GetAsync(x => x.UserGuid.ToString() == HttpContext.User.FindFirst("UserGuid").Value);
             if (appUser == null)
             {
-                return RedirectToAction("SignIn","Account");
+                return RedirectToAction("SignIn", "Account");
             }
-            var addresses= await _serviceAddress.GetAllAsync(a=>a.AppUserId==appUser.Id&&a.IsActive);
+            var addresses = await _serviceAddress.GetAllAsync(a => a.AppUserId == appUser.Id && a.IsActive);
             var model = new CheckoutViewModel()
             {
                 CartProducts = cart.CartLines,
                 TotalPrice = cart.TotalPrice(),
-                Addresses=addresses 
+                Addresses = addresses
             };
             return View(model);
+        }
+        [Authorize,HttpPost]
+        public async Task<IActionResult> Checkout(string CartNumber, string CartMonth, string CartYear, string CVV, string DeliveryAddress, string BillingAddress)
+        {
+            var cart = GetCart();
+            var appUser = await _serviceAppUser.GetAsync(x => x.UserGuid.ToString() == HttpContext.User.FindFirst("UserGuid").Value);
+            if (appUser == null)
+            {
+                return RedirectToAction("SignIn", "Account");
+            }
+            var addresses = await _serviceAddress.GetAllAsync(a => a.AppUserId == appUser.Id && a.IsActive);
+            var model = new CheckoutViewModel()
+            {
+                CartProducts = cart.CartLines,
+                TotalPrice = cart.TotalPrice(),
+                Addresses = addresses
+            };
+            if (string.IsNullOrWhiteSpace(CartNumber) || string.IsNullOrWhiteSpace(CartMonth)
+                || string.IsNullOrWhiteSpace(CartYear) || string.IsNullOrWhiteSpace(CVV)
+                || string.IsNullOrWhiteSpace(DeliveryAddress) || string.IsNullOrWhiteSpace(BillingAddress))
+            {
+                return View(model);
+            }
+
+            var teslimatAdresi = addresses.FirstOrDefault(a=>a.AddressGuid.ToString()==DeliveryAddress);
+            var faturaAdresi = addresses.FirstOrDefault(a=>a.AddressGuid.ToString()==BillingAddress);
+
+            //Ödeme Çekme işlemleri
+            var siparis = new Order
+            {
+                AppUserId = appUser.Id,
+                BillingAddress = $"{faturaAdresi.OpenAddress},{faturaAdresi.District}{faturaAdresi.City}",//BillingAddress,
+                CustomerId = appUser.UserGuid.ToString(),
+                DeliveryAddress = $"{faturaAdresi.OpenAddress},{faturaAdresi.District}{faturaAdresi.City}",//DeliveryAddress,
+                OrderDate = DateTime.Now,
+                TotalPrice = cart.TotalPrice(),
+                OrderNumber = Guid.NewGuid().ToString(),
+                OrderState = 0,
+                OrderLines = []
+            };
+            foreach (var item in cart.CartLines)
+            {
+                siparis.OrderLines.Add(new OrderLine
+                {
+                  ProductId=item.Product.Id,
+                  OrderId=siparis.Id,
+                  Quantity=item.Quantity,
+                  UnitPrice=item.Product.Price
+                });
+            }
+            try
+            {
+                await _serviceOrder.AddAsync(siparis);
+                var sonuc=await _serviceOrder.SaveChangesAsync();
+                if (sonuc>0)
+                {
+                    HttpContext.Session.Remove("Cart");
+                    return RedirectToAction("Thanks");
+                }
+            }
+            catch (Exception)
+            {
+                TempData["Message"] = "Hata Oluştu";
+            }
+            return View(model);
+        }
+        public IActionResult Thanks()
+        {
+           
+            return View();
         }
         private CartService GetCart()
         {

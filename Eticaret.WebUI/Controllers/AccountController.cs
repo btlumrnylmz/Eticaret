@@ -4,6 +4,7 @@ using Eticaret.WebUI.Models;
 using Microsoft.AspNetCore.Authentication;//login
 using Microsoft.AspNetCore.Authorization;//login
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace Eticaret.WebUI.Controllers
@@ -17,16 +18,18 @@ namespace Eticaret.WebUI.Controllers
         //    _context = context;
         //}
         private readonly IService<AppUser> _service;
+        private readonly IService<Order> _serviceOrder;
 
-        public AccountController(IService<AppUser> service)
+        public AccountController(IService<AppUser> service, IService<Order> serviceOrder)
         {
             _service = service;
+            _serviceOrder = serviceOrder;
         }
 
         [Authorize]
         public async Task<IActionResult> Index()
         {
-            AppUser user =await _service.GetAsync(x => x.UserGuid.ToString()
+            AppUser user = await _service.GetAsync(x => x.UserGuid.ToString()
              == HttpContext.User.FindFirst("UserGuid").Value);
             if (user is null)
             {
@@ -60,7 +63,7 @@ namespace Eticaret.WebUI.Controllers
                         user.Password = model.Password;
                         user.Email = model.Email;
                         _service.Update(user);
-                        var sonuc=_service.SaveChanges();
+                        var sonuc = _service.SaveChanges();
 
                         if (sonuc > 0)
                         {
@@ -80,6 +83,21 @@ namespace Eticaret.WebUI.Controllers
                 }
             }
             return View();
+        }
+        [Authorize]
+        public async Task<IActionResult> MyOrders()
+        {
+            AppUser user = await _service.GetAsync(x => x.UserGuid.ToString()
+             == HttpContext.User.FindFirst("UserGuid").Value);
+            if (user is null)
+            {
+                await HttpContext.SignOutAsync();
+                return RedirectToAction("SignIn");
+            }
+            var model = _serviceOrder.GetQueryable().Where(s => s.AppUserId == user.Id).Include(o=>o.OrderLines)
+                .ThenInclude(p=>p.Product);
+
+            return View(model);
         }
         public IActionResult SignIn()
         {

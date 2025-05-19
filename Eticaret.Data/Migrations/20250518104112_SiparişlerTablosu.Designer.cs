@@ -4,6 +4,7 @@ using Eticaret.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Eticaret.Data.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250518104112_SiparişlerTablosu")]
+    partial class SiparişlerTablosu
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -130,14 +133,14 @@ namespace Eticaret.Data.Migrations
                         new
                         {
                             Id = 1,
-                            CreateDate = new DateTime(2025, 5, 19, 21, 46, 49, 648, DateTimeKind.Local).AddTicks(2876),
+                            CreateDate = new DateTime(2025, 5, 18, 13, 41, 10, 663, DateTimeKind.Local).AddTicks(2222),
                             Email = "admin@eticaret.io",
                             IsActive = true,
                             IsAdmin = true,
                             Name = "test",
                             Password = "123456*",
                             Surname = "test",
-                            UserGuid = new Guid("9404d7d0-2616-43ec-9448-cd0f4cb6bdd7"),
+                            UserGuid = new Guid("c94670cd-4943-4bdb-8180-738148047ecd"),
                             UserName = "Admin"
                         });
                 });
@@ -219,7 +222,7 @@ namespace Eticaret.Data.Migrations
                         new
                         {
                             Id = 1,
-                            CreateDate = new DateTime(2025, 5, 19, 21, 46, 49, 651, DateTimeKind.Local).AddTicks(5390),
+                            CreateDate = new DateTime(2025, 5, 18, 13, 41, 10, 669, DateTimeKind.Local).AddTicks(4134),
                             IsActive = true,
                             IsTopMenu = true,
                             Name = "Elektronik",
@@ -229,7 +232,7 @@ namespace Eticaret.Data.Migrations
                         new
                         {
                             Id = 2,
-                            CreateDate = new DateTime(2025, 5, 19, 21, 46, 49, 651, DateTimeKind.Local).AddTicks(6474),
+                            CreateDate = new DateTime(2025, 5, 18, 13, 41, 10, 669, DateTimeKind.Local).AddTicks(5474),
                             IsActive = true,
                             IsTopMenu = true,
                             Name = "Bilgisayar",
@@ -342,15 +345,10 @@ namespace Eticaret.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("OrderState")
-                        .HasColumnType("int");
-
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AppUserId");
 
                     b.ToTable("Orders");
                 });
@@ -480,21 +478,10 @@ namespace Eticaret.Data.Migrations
                     b.Navigation("AppUser");
                 });
 
-            modelBuilder.Entity("Eticaret.Core.Entities.Order", b =>
-                {
-                    b.HasOne("Eticaret.Core.Entities.AppUser", "AppUser")
-                        .WithMany()
-                        .HasForeignKey("AppUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AppUser");
-                });
-
             modelBuilder.Entity("Eticaret.Core.Entities.OrderLine", b =>
                 {
                     b.HasOne("Eticaret.Core.Entities.Order", "Order")
-                        .WithMany("OrderLines")
+                        .WithMany()
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -538,11 +525,6 @@ namespace Eticaret.Data.Migrations
             modelBuilder.Entity("Eticaret.Core.Entities.Category", b =>
                 {
                     b.Navigation("Products");
-                });
-
-            modelBuilder.Entity("Eticaret.Core.Entities.Order", b =>
-                {
-                    b.Navigation("OrderLines");
                 });
 #pragma warning restore 612, 618
         }
