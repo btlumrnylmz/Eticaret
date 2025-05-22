@@ -1,10 +1,13 @@
 ﻿using Eticaret.Core.Entities;
 using Eticaret.Service.Abstract;
 using Eticaret.WebUI.Models;
+using Eticaret.WebUI.Utils;
 using Microsoft.AspNetCore.Authentication;//login
 using Microsoft.AspNetCore.Authorization;//login
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using System.Runtime.Intrinsics.X86;
 using System.Security.Claims;
 
 namespace Eticaret.WebUI.Controllers
@@ -94,8 +97,8 @@ namespace Eticaret.WebUI.Controllers
                 await HttpContext.SignOutAsync();
                 return RedirectToAction("SignIn");
             }
-            var model = _serviceOrder.GetQueryable().Where(s => s.AppUserId == user.Id).Include(o=>o.OrderLines)
-                .ThenInclude(p=>p.Product);
+            var model = _serviceOrder.GetQueryable().Where(s => s.AppUserId == user.Id).Include(o => o.OrderLines)
+                .ThenInclude(p => p.Product);
 
             return View(model);
         }
@@ -157,10 +160,88 @@ namespace Eticaret.WebUI.Controllers
             return View(appUser);
             return View();
         }
-        public async Task<IActionResult> SignOut()
+        public async Task<IActionResult> SignOutAsync()
         {
             await HttpContext.SignOutAsync();
             return RedirectToAction("SignIn");
+        }
+        public IActionResult PasswordRenew()
+        {
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> PasswordRenewAsync(string Email)
+        {
+            if (string.IsNullOrWhiteSpace(Email))
+            {
+                ModelState.AddModelError("", "Email Boş Geçilemez!");
+                return View();
+            }
+            AppUser user = await _service.GetAsync(x => x.Email == Email);
+            if (user is null)
+            {
+                ModelState.AddModelError("", "Girdiğiniz Email Bulunamadı!");
+                return View();
+            }
+            string mesaj = $"Sayın {user.Name} {user.Surname} <br> Şifrenizi Yenilemek İçin Lütfen  :<a href='https://localhost:7171/Account/PasswordChange?user={user.UserGuid.ToString()}'>Tıklayınız</a>";
+            var sonuc = await MailHelper.SendMailAsync(Email, "Şifremi Yenile", mesaj);
+            if (sonuc)
+            {
+                TempData["Message"] = @"<<div class=""alert alert-success alert-dismissible fade show"" role=""alert"">
+                    <strong>Şifre Değiştirme Bağlantınız Mail Adresinize Gönderilmiştir!</strong>
+                    <button type=""button"" class=""btn-close"" data-bs-dismiss=""alert"" aria-label=""Close""></button>
+                    </div>";
+            }
+            else
+            {
+                TempData["Message"] = @"<<div class=""alert alert-danger alert-dismissible fade show"" role=""alert"">
+                    <strong>Şifre Değiştirme Bağlantınız Mail Adresinize Gönderilirken Hata Oluştu!</strong>
+                    <button type=""button"" class=""btn-close"" data-bs-dismiss=""alert"" aria-label=""Close""></button>
+                    </div>";
+            }
+            return View();
+        }
+        public async Task<IActionResult> PasswordChangeAsync(string user)
+        {
+            if (user is null)
+            {
+                return BadRequest("Geçersiz İstek!");
+            }
+            AppUser appUser = await _service.GetAsync(x => x.UserGuid.ToString() == user);
+            if (appUser is null)
+            {
+                return NotFound( "Geçersiz İşlem!");
+            }
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> PasswordChange(string user, string Password)
+        {
+            if (user is null)
+            {
+                return BadRequest("Geçersiz İstek!");
+            }
+            AppUser appUser = await _service.GetAsync(x => x.UserGuid.ToString() == user);
+            if (appUser is null)
+            {
+                ModelState.AddModelError("", "Geçersiz İşlem!");
+                return View();
+            }
+            appUser.Password=Password;
+            var sonuc=await _service.SaveChangesAsync();
+            if (sonuc>0)
+            {
+                TempData["Message"] = @"<<div class=""alert alert-success alert-dismissible fade show"" role=""alert"">
+                    <strong>Şifreniz Güncellenmiştir! Giriş Ekranından Oturum Açabilirsiniz!</strong>
+                    <button type=""button"" class=""btn-close"" data-bs-dismiss=""alert"" aria-label=""Close""></button>
+                    </div>";
+            }
+            else
+            {
+                ModelState.AddModelError("", "Güncelleme Başarısız!!");
+
+            }
+                return View();
         }
     }
 }

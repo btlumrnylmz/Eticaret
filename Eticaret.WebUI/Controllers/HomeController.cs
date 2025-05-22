@@ -29,7 +29,7 @@ namespace Eticaret.WebUI.Controllers
             var model = new HomePageViewModel()
             {
                 Slides = await _serviceSlides.GetAllAsync(),
-                News = await _serviceNews.GetAllAsync(),
+                News = await _serviceNews.GetAllAsync(news=> news.IsActive),
                 Products = await _serviceProduct.GetAllAsync(p => p.IsActive && p.IsHome)
             };
             return View(model);
@@ -49,7 +49,7 @@ namespace Eticaret.WebUI.Controllers
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> ContactUs(Contact contact)
+        public async Task<IActionResult> ContactUsAsync(Contact contact)
         {
             if (ModelState.IsValid)
             {

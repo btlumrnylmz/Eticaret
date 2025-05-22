@@ -28,14 +28,14 @@ namespace Eticaret.WebUI.Areas.Admin.Controllers
         {
             if (id == null)
             {
-                return NotFound();
+                return NotFound("Geçersiz İstek");
             }
 
             var news = await _context.News
-                .FirstOrDefaultAsync(m => m.Id == id);
+                .FirstOrDefaultAsync(m => m.Id == id&&m.IsActive);
             if (news == null)
             {
-                return NotFound();
+                return NotFound("Geçerli Bir Kampanya Bulunamadı");
             }
 
             return View(news);

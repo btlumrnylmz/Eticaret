@@ -19,12 +19,13 @@ namespace Eticaret.Data
         public DbSet<OrderLine> OrderLines { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder
-                .UseSqlServer(@"Server=DESKTOP-98P21PR;Database=EticaretDb;Trusted_Connection=True;TrustServerCertificate=True;")
-                .ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+        {//local
+           optionsBuilder.UseSqlServer(@"Server=DESKTOP-98P21PR;Database=EticaretDb;Trusted_Connection=True;TrustServerCertificate=True;");
 
-            base.OnConfiguring(optionsBuilder);
+            // optionsBuilder.ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning));
+           //free server
+           // optionsBuilder.UseSqlServer(@"workstation id=E_ticaret.mssql.somee.com;packet size=4096;user id=betulumran_SQLLogin_4;pwd=l5u7gp216a;data source=E_ticaret.mssql.somee.com;persist security info=False;initial catalog=E_ticaret;TrustServerCertificate=True;");
+            //base.OnConfiguring(optionsBuilder);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
